@@ -551,6 +551,12 @@
   function val(id){ var el=document.getElementById(id); return el ? (el.value||'').trim() : ''; }
   function formMsg(t, ok){ var el=document.getElementById('formMsg'); if(el){ el.textContent=t; el.style.color = ok ? '#7FE3DD' : '#FFC9B8'; } }
   function togglePriv(e){ e.preventDefault(); var d=document.getElementById('privBox'); if(d){ d.open=true; d.scrollIntoView({behavior:'smooth',block:'nearest'}); } return false; }
+  function limpiarForm(){
+    ['nombre','telefono','correo','fecha','mensaje'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    var t=document.getElementById('tour'); if(t) t.selectedIndex=0;
+    var p=document.getElementById('personas'); if(p) p.selectedIndex=0;
+    var c=document.getElementById('consent'); if(c) c.checked=false;
+  }
   function enviar(canal){
     var nombre=val('nombre'), telefono=val('telefono'), correo=val('correo'),
         tour=val('tour'), fecha=val('fecha'), personas=val('personas'), mensaje=val('mensaje');
@@ -568,10 +574,10 @@
       if(mensaje) m+='\nMensaje: '+mensaje;
       abrirWA(m);
       formMsg('Abriendo WhatsApp… ¡gracias! Tu solicitud también quedó registrada.', true);
+      limpiarForm();
     } else {
       formMsg('¡Gracias! Recibimos tu solicitud y te contactaremos pronto.', true);
-      ['nombre','telefono','correo','fecha','mensaje'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-      var c=document.getElementById('consent'); if(c) c.checked=false;
+      limpiarForm();
     }
   }
   function loadCounter(){
