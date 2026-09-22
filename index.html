@@ -225,6 +225,21 @@
   .leg i{width:30px;height:0;border-top:4px dotted #12889E;border-radius:2px}
   .leg.coral i{border-top-color:#E1552F}
   .maplegend .muted{color:var(--muted);font-weight:500;font-size:.85rem}
+
+  .form textarea{width:100%;padding:.75rem .85rem;border-radius:12px;border:1.5px solid var(--line);background:var(--foam);color:var(--ink);font-family:inherit;font-size:1rem;resize:vertical}
+  .form textarea:focus{outline:2px solid var(--aqua);outline-offset:1px;border-color:var(--aqua)}
+  .form .check{display:flex;gap:.55rem;align-items:flex-start;margin:1rem 0 0;font-weight:500;font-size:.9rem;color:var(--ink)}
+  .form .check input{width:18px;height:18px;margin-top:2px;flex:0 0 auto;accent-color:var(--coral)}
+  .form .check a{color:var(--teal);font-weight:700}
+  .form-actions{display:flex;gap:.7rem;margin-top:1.1rem;flex-wrap:wrap}
+  .form-actions .btn{flex:1 1 auto;justify-content:center}
+  .form .btn-ghost{color:var(--ink);border:1.5px solid var(--line);background:transparent}
+  .form .btn-ghost:hover{border-color:var(--aqua)}
+  .form-msg{min-height:1.2em;margin:.7rem 0 0;font-weight:600;font-size:.9rem}
+  .priv{margin-top:.9rem;font-size:.85rem;color:var(--muted)}
+  .priv summary{cursor:pointer;font-weight:700;color:var(--ink);font-size:.9rem}
+  .priv p{margin:.5rem 0 0}
+  .foot-in .visits, #visitCount{font-weight:700;color:#DAF3F1}
 </style>
 </head>
 <body>
@@ -460,7 +475,7 @@
     <div>
       <span class="tag" style="color:#BDEFEE">Reserva ahora</span>
       <h2>Cuéntanos tu plan y te confirmamos</h2>
-      <p class="lead">Completa tus datos y se abrirá WhatsApp con tu solicitud lista para enviar. Te respondemos con disponibilidad e instrucciones para el depósito.</p>
+      <p class="lead">Déjanos tus datos: envía tu solicitud por WhatsApp o solo mándala y te contactamos. En ambos casos queda registrada, y te respondemos con disponibilidad y el depósito.</p>
       <ul class="contact-list">
         <li><span class="ic">📱</span> WhatsApp: <span id="wa-display">+52 983 191 7311</span></li>
         <li><span class="ic">📍</span> Muelle de Calderitas, Bahía de Chetumal</li>
@@ -469,16 +484,31 @@
       <a class="btn btn-ghost" href="https://www.google.com/maps/search/?api=1&query=Muelle+de+Calderitas+Quintana+Roo" target="_blank" rel="noopener">Cómo llegar al muelle</a>
     </div>
     <div class="form">
-      <label for="nombre">Tu nombre</label>
+      <label for="nombre">Tu nombre *</label>
       <input id="nombre" type="text" placeholder="Nombre y apellido" />
+      <div class="row">
+        <div><label for="telefono">Teléfono / WhatsApp</label><input id="telefono" type="tel" placeholder="Ej. 983 123 4567" /></div>
+        <div><label for="correo">Correo</label><input id="correo" type="email" placeholder="tucorreo@ejemplo.com" /></div>
+      </div>
       <label for="tour">Tour de interés</label>
-      <select id="tour"><option>Isla Tamalcab — $2,990</option><option>Ruta a los Cayos — $5,500</option><option>Tour de Pesca Deportiva — $8,000</option></select>
+      <select id="tour"><option>Información general</option><option>Isla Tamalcab — $2,990</option><option>Ruta a los Cayos — $5,500</option><option>Tour de Pesca Deportiva — $8,000</option></select>
       <div class="row">
         <div><label for="fecha">Fecha</label><input id="fecha" type="date" /></div>
         <div><label for="personas">Personas</label>
-          <select id="personas"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+          <select id="personas"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
       </div>
-      <button class="btn btn-wa" onclick="reservarForm()">Enviar solicitud por WhatsApp</button>
+      <label for="mensaje">Mensaje (opcional)</label>
+      <textarea id="mensaje" rows="3" placeholder="Cuéntanos qué necesitas"></textarea>
+      <label class="check"><input id="consent" type="checkbox" /> <span>He leído y acepto el <a href="#" onclick="return togglePriv(event)">aviso de privacidad</a>.</span></label>
+      <div class="form-actions">
+        <button class="btn btn-wa" onclick="enviar('whatsapp')">Enviar por WhatsApp</button>
+        <button class="btn btn-ghost" onclick="enviar('formulario')">Enviar solicitud</button>
+      </div>
+      <p id="formMsg" class="form-msg" role="status"></p>
+      <details id="privBox" class="priv">
+        <summary>Aviso de privacidad</summary>
+        <p>Calderitas Xperience recaba tus datos (nombre y medio de contacto) con la única finalidad de atender tu solicitud de información o reserva y contactarte. No los compartimos con terceros ajenos al servicio ni los usamos para otros fines. Puedes solicitar acceder, rectificar, cancelar u oponerte al uso de tus datos escribiéndonos por WhatsApp. Al enviar tu solicitud, aceptas este aviso.</p>
+      </details>
     </div>
   </div>
 </section>
@@ -486,7 +516,7 @@
 <footer>
   <div class="wrap foot-in">
     <div><a href="#top">Calderitas Xperience</a> · Tours privados en la Bahía de Chetumal</div>
-    <small>© <span id="year"></span> · Experiencias personalizadas y seguras.</small>
+    <small>© <span id="year"></span> · Experiencias personalizadas y seguras · 🌊 <span id="visitCount">—</span> visitas</small>
   </div>
 </footer>
 
@@ -501,6 +531,8 @@
 <script>
   // >>> Reemplaza este número por el WhatsApp real (formato internacional, sin + ni espacios) <<<
   const WA = "5219831917311";
+  // >>> Pega aquí la URL de tu Google Apps Script (termina en /exec) <<<
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJSSU2RALFDpNAFDmsg-ME_-tNcokGaGLyhWYylGDZ-A59jAOgtj80SL0QNsS9MPv_/exec";
 
   document.getElementById('year').textContent = new Date().getFullYear();
   const toggle = document.getElementById('toggle'), menu = document.getElementById('menu');
@@ -508,16 +540,52 @@
   menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menu.classList.remove('open')));
 
   function abrirWA(m){ window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(m), '_blank'); }
-  function reservar(tour){ abrirWA('¡Hola Calderitas Xperience! Me interesa reservar el tour "'+tour+'". ¿Me confirman disponibilidad y cómo apartar con el depósito?'); }
-  function reservarForm(){
-    const n=(document.getElementById('nombre').value||'').trim();
-    const t=document.getElementById('tour').value, f=document.getElementById('fecha').value, p=document.getElementById('personas').value;
-    let m='¡Hola Calderitas Xperience! Quiero reservar un tour.';
-    if(n) m+='\nNombre: '+n;
-    m+='\nTour: '+t; if(f) m+='\nFecha: '+f; m+='\nPersonas: '+p;
-    m+='\n¿Me confirman disponibilidad y el depósito para apartar?';
-    abrirWA(m);
+  function reservar(tour){ logLead({canal:'whatsapp-directo',tour:tour}); abrirWA('¡Hola Calderitas Xperience! Me interesa reservar el tour "'+tour+'". ¿Me confirman disponibilidad y cómo apartar con el depósito?'); }
+  function logLead(data){
+    try{
+      if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PEGA')===0) return;
+      data.origen = location.hostname;
+      fetch(APPS_SCRIPT_URL, {method:'POST', mode:'no-cors', body:new URLSearchParams(data)}).catch(function(){});
+    }catch(e){}
   }
+  function val(id){ var el=document.getElementById(id); return el ? (el.value||'').trim() : ''; }
+  function formMsg(t, ok){ var el=document.getElementById('formMsg'); if(el){ el.textContent=t; el.style.color = ok ? '#7FE3DD' : '#FFC9B8'; } }
+  function togglePriv(e){ e.preventDefault(); var d=document.getElementById('privBox'); if(d){ d.open=true; d.scrollIntoView({behavior:'smooth',block:'nearest'}); } return false; }
+  function enviar(canal){
+    var nombre=val('nombre'), telefono=val('telefono'), correo=val('correo'),
+        tour=val('tour'), fecha=val('fecha'), personas=val('personas'), mensaje=val('mensaje');
+    var consent=document.getElementById('consent') && document.getElementById('consent').checked;
+    if(!nombre){ formMsg('Por favor escribe tu nombre.', false); return; }
+    if(!consent){ formMsg('Marca la casilla del aviso de privacidad para continuar.', false); return; }
+    if(canal==='formulario' && !telefono && !correo){ formMsg('Déjanos un teléfono o correo para poder contactarte.', false); return; }
+    logLead({canal:canal, nombre:nombre, tour:tour, fecha:fecha, personas:personas, telefono:telefono, correo:correo, mensaje:mensaje});
+    if(canal==='whatsapp'){
+      var m='¡Hola Calderitas Xperience! Quiero información / reservar.';
+      m+='\nNombre: '+nombre;
+      if(tour) m+='\nTour: '+tour;
+      if(fecha) m+='\nFecha: '+fecha;
+      if(personas) m+='\nPersonas: '+personas;
+      if(mensaje) m+='\nMensaje: '+mensaje;
+      abrirWA(m);
+      formMsg('Abriendo WhatsApp… ¡gracias! Tu solicitud también quedó registrada.', true);
+    } else {
+      formMsg('¡Gracias! Recibimos tu solicitud y te contactaremos pronto.', true);
+      ['nombre','telefono','correo','fecha','mensaje'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+      var c=document.getElementById('consent'); if(c) c.checked=false;
+    }
+  }
+  function loadCounter(){
+    var el=document.getElementById('visitCount');
+    if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PEGA')===0) return;
+    var hit=false; try{ hit=!sessionStorage.getItem('cx_seen'); sessionStorage.setItem('cx_seen','1'); }catch(e){ hit=true; }
+    var cb='cxc'+Date.now();
+    var sc=document.createElement('script');
+    window[cb]=function(res){ if(res && typeof res.count==='number' && el){ el.textContent=res.count.toLocaleString('es-MX'); } try{delete window[cb];}catch(e){} if(sc&&sc.parentNode) sc.parentNode.removeChild(sc); };
+    sc.onerror=function(){ try{delete window[cb];}catch(e){} };
+    sc.src=APPS_SCRIPT_URL+'?action='+(hit?'hit':'get')+'&callback='+cb;
+    document.body.appendChild(sc);
+  }
+  loadCounter();
 
   // Lightbox
   const TILES = [...document.querySelectorAll('.gtile')];
